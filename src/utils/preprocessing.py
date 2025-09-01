@@ -3,6 +3,43 @@ import pandas as pd
 import itertools
 import pickle
 from collections import Counter
+import joblib
+from umls_api import API
+from tqdm import tqdm
+
+
+def get_cuis_semantic_types():
+    df_cuis = pd.read_csv("..\\data\\raw\\cui_mapping.csv")
+    xss = [cuis.split(";") for cuis in df_cuis["CUI"]]
+    cuis = [x for xs in xss for x in xs]
+    
+    
+    def get_cui_semantic_types(cui):
+        try:
+            api = API(api_key=os.getenv("UMLS_API_KEY"))  # Initialize once
+            resp = api.get_cui(cui=cui)
+            cui_semantic_types = resp["result"]["semanticTypes"]
+            names = [st["name"] for st in cui_semantic_types]
+            return {cui: set(names)}
+        except Exception as e:
+            print(f"Error processing CUI {cui}: {e}")
+            return {cui: set()}
+
+
+    results = joblib.Parallel(n_jobs=-1, verbose=10)(
+        joblib.delayed(get_cui_semantic_types)(cui) 
+        for cui in tqdm(cuis, desc="Processing CUIs")
+    )
+
+    cuis_semantic_types = dict()
+    for d in results:
+        key = [*d][0]
+        cuis_semantic_types[key] = d[key]
+
+    with open("..\\..\\data\\interim\\cuis_semantic_types.pkl", "wb") as f:
+        pickle.dump(cuis_semantic_types, f)
+        
+    return cuis_semantic_types
 
 
 def get_dataframe(split:str = "train") -> pd.DataFrame:
@@ -27,9 +64,12 @@ def get_dataframe(split:str = "train") -> pd.DataFrame:
         "C0025062",  # Mediastinal emphysema
     ]
 
-    
-    cuis_semantic_types = pickle.load(open("..\\..\\data\\interim\\cuis_semantic_types.pkl", "rb"))
 
+    if os.path.exists("..\\..\\data\\interim\\cuis_semantic_types.pkl"):
+        cuis_semantic_types = pickle.load(open("..\\..\\data\\interim\\cuis_semantic_types.pkl", "rb"))
+    else:
+        cuis_semantic_types = get_cuis_semantic_types()
+    
     base_dir = "..\\..\\data\\raw\\"
     df = pd.read_csv(os.path.join(base_dir, f"{split}_concepts.csv"))
     
