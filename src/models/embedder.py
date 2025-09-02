@@ -7,10 +7,19 @@ from PIL import Image
 
 
 class Embedder:
+    """Parent class for every embedding model.
+    
+    ---
+    Attributes:
+    - data: a pandas dataframe column of the the data that you want embedd.
+    - 
+    
+    
+    """
     def __init__(self, data, tokenizer, model, embedding_type):
         self.embeddings = None
         self.embedding_type = embedding_type
-        self.data = data
+        self.data = data.tolist()
         self.tokenizer = tokenizer
         self.model = model
         self.model.eval()
@@ -22,21 +31,27 @@ class Embedder:
         return self.embeddings 
       
     def load_embeddings(self, output_file):
-        return torch.load(output_file)  if os.path.exists(output_file) else None
+        if os.path.exists(output_file):
+            self.embeddings = torch.load(output_file)
+            self.embeddings = self.embeddings.detach().cpu().numpy().astype("float32")
+            return True
+        return None
       
     
 
 class BertEmbedder(Embedder):
-    def __init__(self, data: pd.DataFrame, 
+    def __init__(self, data, 
                  tokenizer = BertTokenizer.from_pretrained('bert-base-uncased'), 
                  model = BertModel.from_pretrained('bert-base-uncased'), 
                  embedding_type = "text"):
-        super().__init__(self, embedding_type, data, tokenizer, model)
+        super().__init__(data, tokenizer, model, embedding_type)
     
-    def create_embeddings(self, texts, batch_size=64, output_file='..\\..\\data\\processed\\bert_text_embeddings.pt'):
-        preloaded = self.load_embeddings()
+    def create_embeddings(self, batch_size=64, output_file='..\\..\\data\\processed\\bert_text_embeddings.pt'):
+        texts = self.data
+        preloaded = self.load_embeddings(output_file)
         if preloaded is not None:
-            return preloaded
+            print("Embeddings already found")
+            return
         
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # Move model to the selected device
@@ -85,18 +100,20 @@ class VitEmbedder(Embedder):
                  tokenizer = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k"), 
                  model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k"), 
                  embedding_type = "image"):
-        super().__init__(self,embedding_type, data, tokenizer, model)
+        super().__init__(data, tokenizer, model, embedding_type)
         
-    def create_embeddings(self,image_paths, batch_size=32, output_file="..\\..\\data\\processed\\vit_image_embeddings.pt"):
-        preloaded = self.load_embeddings()
+    def create_embeddings(self, batch_size=32, output_file="data\\processed\\vit_image_embeddings.pt"):
+        image_paths = self.data
+        preloaded = self.load_embeddings(output_file)
         if preloaded is not None:
-            return preloaded
+            print("Embeddings already found")
+            return
         
         
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
         
-        base_dir = "..\\..\\data\\raw\\train"
+        base_dir = "data\\raw\\train"
         all_emb = []
         num_images = len(image_paths)
         

@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 
 def get_cuis_semantic_types():
-    df_cuis = pd.read_csv("..\\data\\raw\\cui_mapping.csv")
+    df_cuis = pd.read_csv("data\\raw\\cui_mapping.csv")
     xss = [cuis.split(";") for cuis in df_cuis["CUI"]]
     cuis = [x for xs in xss for x in xs]
     
@@ -36,17 +36,18 @@ def get_cuis_semantic_types():
         key = [*d][0]
         cuis_semantic_types[key] = d[key]
 
-    with open("..\\..\\data\\interim\\cuis_semantic_types.pkl", "wb") as f:
+    with open("data\\interim\\cuis_semantic_types.pkl", "wb") as f:
         pickle.dump(cuis_semantic_types, f)
         
     return cuis_semantic_types
 
 
 def get_dataframe(split:str = "train") -> pd.DataFrame:
-    if os.path.exists(f"..\\..\\data\\processed\\data.pkl"):
-        return pd.read_pickle(f"..\\..\\data\\processed\\data.pkl")
+    if os.path.exists(f"data\\processed\\data.pkl"):
+        print("Dataframe found")
+        return pd.read_pickle(f"data\\processed\\data.pkl")
     
-    
+    print("Dataframe not found, creating new one")
     important_st = {"Disease or Syndrome", "Neoplastic Process", "Anatomical Abnormality"}
     
     selected_cuis = [
@@ -65,12 +66,12 @@ def get_dataframe(split:str = "train") -> pd.DataFrame:
     ]
 
 
-    if os.path.exists("..\\..\\data\\interim\\cuis_semantic_types.pkl"):
-        cuis_semantic_types = pickle.load(open("..\\..\\data\\interim\\cuis_semantic_types.pkl", "rb"))
+    if os.path.exists("data\\interim\\cuis_semantic_types.pkl"):
+        cuis_semantic_types = pickle.load(open("data\\interim\\cuis_semantic_types.pkl", "rb"))
     else:
         cuis_semantic_types = get_cuis_semantic_types()
     
-    base_dir = "..\\..\\data\\raw\\"
+    base_dir = "data\\raw\\"
     df = pd.read_csv(os.path.join(base_dir, f"{split}_concepts.csv"))
     
     print(f"Initial shape: {df.shape}")
@@ -156,7 +157,7 @@ def get_dataframe(split:str = "train") -> pd.DataFrame:
     print(f"Shape after filtering by selected CUIs: {df.shape}")    
     
     
-    df.to_pickle(f"..\\..\\data\\processed\\data.pkl")
+    df.to_pickle(f"data\\processed\\data.pkl")
     
     return df
 
