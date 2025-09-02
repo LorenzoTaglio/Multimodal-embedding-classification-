@@ -148,6 +148,3 @@ class VitEmbedder(Embedder):
     def load_embeddings(self, output_file):
         return super().load_embeddings(output_file)
     
-    
-
-        

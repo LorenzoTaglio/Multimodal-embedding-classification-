@@ -28,7 +28,14 @@ def main():
 
 
     # -----------------------------------late-fusion-----------------------------------
+    print("Late fusion pipeline")
+    late_fusion = models.LateFusionPipeline(txt_embeddings, img_embeddings, df["CUI"])
+    late_fusion_results = late_fusion.late_fusion_stratified()
     
-
+    for key, results in late_fusion_results.items():
+        results.to_dataframe().to_csv(f"out\\late_fusion_{key}.csv")
+    
+    print("Results saved to dir 'out'.")
+    
 if __name__ == "__main__":
     main()

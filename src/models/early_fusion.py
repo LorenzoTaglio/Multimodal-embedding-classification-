@@ -26,7 +26,7 @@ class EarlyFusionPipeline:
             y_train, y_test = self.y[train_idx], self.y[test_idx]
 
             print(f"Fold {i}:")
-            y_pred_proba, y_pred = xgb_wrapper.train_test_base(X_train, y_train, X_test)
+            _, y_pred, _ = xgb_wrapper.train_test_base(X_train, y_train, X_test)
             label_encoder = LabelEncoder()
             label_encoder.fit(self.label_names)
             y_test_names = label_encoder.inverse_transform(y_test)

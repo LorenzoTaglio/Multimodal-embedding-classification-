@@ -34,22 +34,28 @@ class XGBWrapper:
         
         sample_weights = np.array([self.weight_dict[label] for label in y_train])
         self.base_classifier[-1].fit(X_train, y_train, sample_weight=sample_weights, verbose=True)
+    
         
-        
-
     def predict_base(self, X_test):
         y_pred_proba = self.base_classifier[-1].predict_proba(X_test)
         y_pred = np.argmax(y_pred_proba, axis=1)
         return y_pred_proba, y_pred
+
+    def predict_train(self, X_train):
+        y_pred_proba_train = self.base_classifier[-1].predict_proba(X_train)
+        return y_pred_proba_train
     
     
-    def train_test_base(self, X_train, y_train ,X_test):
+    def train_test_base(self, X_train, y_train ,X_test, pred_train = False):
         time_start = time.time()
+        y_pred_proba_train = None
         print("\tTraining classifier...")
-        self.train_base(X_train, y_train)
+        self.train_base(X_train, y_train)    
         print("\tPredicting...")
         y_pred_proba, y_pred = self.predict_base(X_test)
+        if pred_train:
+            y_pred_proba_train = self.predict_train(X_train)
         elapsed = time.time() - time_start
         print(f"Time taken: {elapsed:.2f}")
         
-        return y_pred_proba, y_pred
+        return y_pred_proba, y_pred, y_pred_proba_train
