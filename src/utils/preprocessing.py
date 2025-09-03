@@ -67,6 +67,7 @@ def get_dataframe(split:str = "train") -> pd.DataFrame:
 
 
     if os.path.exists("data\\interim\\cuis_semantic_types.pkl"):
+        print("\t cuis_semantic_types.pkl already found!")
         cuis_semantic_types = pickle.load(open("data\\interim\\cuis_semantic_types.pkl", "rb"))
     else:
         cuis_semantic_types = get_cuis_semantic_types()
@@ -113,7 +114,7 @@ def get_dataframe(split:str = "train") -> pd.DataFrame:
     cui_freq = Counter(itertools.chain.from_iterable(df["CUIs"]))
     cui_freq = {k: v for k, v in cui_freq.items() if v >= 100}
     
-    df_cui_map = pd.read_csv("..\\..\\data\\raw\\cui_mapping.csv")
+    df_cui_map = pd.read_csv("data\\raw\\cui_mapping.csv")
 
     df_cui_map = df_cui_map[df_cui_map["CUI"].apply(lambda cui: cui in cui_freq)]
     df_cui_map["Frequency"] = df_cui_map["CUI"].apply(lambda cui: cui_freq.get(cui, 0))
@@ -156,6 +157,8 @@ def get_dataframe(split:str = "train") -> pd.DataFrame:
     df = df[df["CUI"].isin(selected_cuis)]
     print(f"Shape after filtering by selected CUIs: {df.shape}")    
     
+    # C0001304 -> C0000833
+    df["CUI"] = df["CUI"].apply(lambda cui: "C0000833" if cui == "C0001304" else cui)
     
     df.to_pickle(f"data\\processed\\data.pkl")
     

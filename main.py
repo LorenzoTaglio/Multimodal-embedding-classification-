@@ -6,7 +6,6 @@ def main():
     # load data
     df = utils.get_dataframe()
     
-    
     # load embedding models
     text_embedder = models.BertEmbedder(data=df["Caption"])
     image_embedder = models.VitEmbedder(data=df["Image"])

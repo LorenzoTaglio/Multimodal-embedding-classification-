@@ -102,7 +102,7 @@ class VitEmbedder(Embedder):
                  embedding_type = "image"):
         super().__init__(data, tokenizer, model, embedding_type)
         
-    def create_embeddings(self, batch_size=32, output_file="data\\processed\\vit_image_embeddings.pt"):
+    def create_embeddings(self, base_dir = "data\\raw\\train", batch_size=32, output_file="data\\processed\\vit_image_embeddings.pt"):
         image_paths = self.data
         preloaded = self.load_embeddings(output_file)
         if preloaded is not None:
@@ -113,7 +113,7 @@ class VitEmbedder(Embedder):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
         
-        base_dir = "data\\raw\\train"
+        
         all_emb = []
         num_images = len(image_paths)
         
