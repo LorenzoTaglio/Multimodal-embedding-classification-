@@ -1,5 +1,5 @@
 print("Initializing models...")
-from .embedder import BertEmbedder, VitEmbedder
+from .embedder import BertEmbedder, VitEmbedder, MedImageEmbedder
 
 from .xgb_wrapper import XGBWrapper
 from .early_fusion import EarlyFusionPipeline
