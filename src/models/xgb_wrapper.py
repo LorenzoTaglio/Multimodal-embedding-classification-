@@ -59,3 +59,12 @@ class XGBWrapper:
         print(f"Time taken: {elapsed:.2f}")
         
         return y_pred_proba, y_pred, y_pred_proba_train
+    
+    def mean_predictions (self, X_test, y_test_len):
+        mean_preds = np.zeros((y_test_len, len(self.classes)))
+        
+        for classifier in self.base_classifier:
+            mean_preds += classifier.predict_proba(X_test)
+        
+        return mean_preds / len(self.base_classifier)
+        
