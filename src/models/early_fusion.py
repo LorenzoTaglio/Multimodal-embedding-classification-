@@ -21,8 +21,8 @@ class EarlyFusionPipeline:
         k_fold  = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         i = 1
         for train_idx, test_idx in k_fold.split(self.X, self.y):
-            # X_train, X_test = self.X[train_idx], self.X[test_idx]
-            X_train, X_test = self.pca.fit_transform(self.X[train_idx]), self.pca.transform(self.X[test_idx])
+            X_train, X_test = self.X[train_idx], self.X[test_idx]
+            # X_train, X_test = self.pca.fit_transform(self.X[train_idx]), self.pca.transform(self.X[test_idx])
             y_train, y_test = self.y[train_idx], self.y[test_idx]
 
             print(f"Fold {i}:")
