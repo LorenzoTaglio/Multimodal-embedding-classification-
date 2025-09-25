@@ -4,6 +4,9 @@ import torch
 from tqdm import tqdm
 import os
 from PIL import Image
+from MedImageInsights.medimageinsightmodel import MedImageInsight
+import base64
+import numpy as np
 
 
 class Embedder:
@@ -16,13 +19,14 @@ class Embedder:
     
     
     """
-    def __init__(self, data, tokenizer, model, embedding_type):
+    def __init__(self, data, tokenizer, model, embedding_type, name):
         self.embeddings = None
         self.embedding_type = embedding_type
         self.data = data.tolist()
         self.tokenizer = tokenizer
         self.model = model
-        self.model.eval()
+        self.name = name
+        
 
     def create_embeddings(self):
         pass  
@@ -43,14 +47,17 @@ class BertEmbedder(Embedder):
     def __init__(self, data, 
                  tokenizer = BertTokenizer.from_pretrained('bert-base-uncased'), 
                  model = BertModel.from_pretrained('bert-base-uncased'), 
-                 embedding_type = "text"):
-        super().__init__(data, tokenizer, model, embedding_type)
+                 embedding_type = "text",
+                 name="BERT"
+                 ):
+        super().__init__(data, tokenizer, model, embedding_type, name)
+        self.model.eval()
     
     def create_embeddings(self, batch_size=64, output_file='..\\..\\data\\processed\\bert_text_embeddings.pt'):
         texts = self.data
         preloaded = self.load_embeddings(output_file)
         if preloaded is not None:
-            print("Embeddings already found")
+            print(f"{self.embedding_type} embeddings already found")
             return
         
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -99,14 +106,17 @@ class VitEmbedder(Embedder):
     def __init__(self, data, 
                  tokenizer = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k"), 
                  model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k"), 
-                 embedding_type = "image"):
-        super().__init__(data, tokenizer, model, embedding_type)
+                 embedding_type = "image",
+                 name="ViT"
+                 ):
+        super().__init__(data, tokenizer, model, embedding_type, name)
+        self.model.eval()
         
     def create_embeddings(self, base_dir = "data\\raw\\train", batch_size=32, output_file="data\\processed\\vit_image_embeddings.pt"):
         image_paths = self.data
         preloaded = self.load_embeddings(output_file)
         if preloaded is not None:
-            print("Embeddings already found")
+            print(f"{self.embedding_type} embeddings already found")
             return
         
         
@@ -148,3 +158,66 @@ class VitEmbedder(Embedder):
     def load_embeddings(self, output_file):
         return super().load_embeddings(output_file)
     
+
+class MedImageEmbedder(Embedder):
+    def __init__(self, data,
+                 processor = None,
+                 model = MedImageInsight(
+                            model_dir="MedImageInsights\\2024.09.27",
+                            vision_model_name="medimageinsigt-v1.0.0.pt",
+                            language_model_name="language_model.pth"),
+                 embedding_type="image",
+                 name="MedImageInsight"
+                 ):        
+        super().__init__(data, processor, model, embedding_type, name)
+        
+
+    def create_embeddings(self, base_dir="data\\raw\\train", batch_size=32,
+                          output_file="data\\processed\\medimage_embeddings.pt"):
+
+        image_paths = self.data
+        
+        preloaded = self.load_embeddings(output_file)
+        if preloaded is not None:
+            print(f"{self.embedding_type} embeddings already found")
+            return
+        
+        # load model only if necessary, since it's time-consuming
+        self.model.load_model()
+        
+        # Pre-allocate tensor for better memory management
+        all_embeddings = []
+        
+        print("Starting encoding...")
+        for i in tqdm(range(0, len(image_paths), batch_size), desc="Embedding batches"):
+            batch_paths = image_paths[i:i+batch_size]
+
+            # Load and encode batch
+            batch_images = []
+            for image_path in batch_paths:
+                with open(os.path.join(base_dir, image_path), "rb") as f:
+                    base64_img = base64.encodebytes(f.read()).decode("utf-8")
+                    batch_images.append(base64_img)
+
+            # Encode batch and immediately free GPU memory
+            with torch.no_grad():
+                batch_embeddings = self.model.encode(images=batch_images)
+                all_embeddings.append(batch_embeddings["image_embeddings"])
+
+            # Explicit cleanup if needed for very large batches
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        # Concatenate all embeddings
+        self.embeddings = torch.cat(all_embeddings, dim=0)
+
+        # Save results
+        torch.save(self.embeddings, output_file)
+        print(f"Saved {len(self.embeddings)} embeddings to {output_file}")
+        
+
+    def get_embeddings(self):
+        return super().get_embeddings()
+    
+    def load_embeddings(self, output_file):
+        return super().load_embeddings(output_file)
