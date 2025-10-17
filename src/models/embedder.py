@@ -202,7 +202,9 @@ class MedImageEmbedder(Embedder):
             # Encode batch and immediately free GPU memory
             with torch.no_grad():
                 batch_embeddings = self.model.encode(images=batch_images)
-                all_embeddings.append(batch_embeddings["image_embeddings"])
+                emb = batch_embeddings["image_embeddings"]
+                emb = torch.as_tensor(emb, dtype=torch.float32)
+                all_embeddings.append(emb)
 
             # Explicit cleanup if needed for very large batches
             if torch.cuda.is_available():

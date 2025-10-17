@@ -47,7 +47,8 @@ class metrics:
             "recall_std": np.std(self.recall, axis=0),
             "f1_mean": np.mean(self.f1, axis=0),
             "f1_std": np.std(self.f1, axis=0),
-            "support_mean": np.mean(self.support, axis=0),  # utile per contare i campioni mediamente visti
+            "support_mean": np.mean(self.support, axis=0),
+            "support_std": np.std(self.support, axis=0),
             "accuracy_mean": np.mean(self.accuracy),
             "accuracy_std": np.std(self.accuracy)
         })
@@ -63,6 +64,7 @@ class metrics:
             "f1_mean": [np.mean(dataframe["f1_mean"])],
             "f1_std": [np.mean(dataframe["f1_std"])],
             "support_mean": [np.mean(dataframe["support_mean"])],
+            "support_std": [np.std(dataframe["support_std"])],
             "accuracy_mean": [np.mean(self.accuracy)],
             "accuracy_std": [np.std(self.accuracy)],
         })

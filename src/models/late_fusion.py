@@ -22,9 +22,9 @@ class LateFusionPipeline:
     def weighted_mean(self, txt_pred, img_pred, y_true, step):
         best_score = -np.inf
         best_weights = [0,0]
-        for w_t in range(0,1, step):
+        for w_t in np.arange(0,1+step, step):
             w_i = 1-w_t
-            y_pred_proba = w_t*txt_pred, w_i*img_pred
+            y_pred_proba = w_t*txt_pred + w_i*img_pred
             y_pred = np.argmax(y_pred_proba, axis=1)
             score = metrics.get_accuracy(y_pred,y_true)
             if score > best_score:

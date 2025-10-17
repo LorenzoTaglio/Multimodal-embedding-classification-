@@ -1,0 +1,3 @@
+class,class_name,Type,Models,precision,recall,f1,support,accuracy
+OVERRALL,,Early-fusion,BERT+ViT,$0.84 \pm 0.04$,$0.82 \pm 0.06$,$0.82 \pm 0.03$,$40.49 \pm 0.22$,$0.85 \pm 0.02$
+OVERRALL,,Early-fusion,BERT+MedImageInsight,$0.85 \pm 0.05$,$0.83 \pm 0.05$,$0.84 \pm 0.04$,$40.49 \pm 0.22$,$0.86 \pm 0.02$

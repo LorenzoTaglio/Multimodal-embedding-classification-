@@ -1,0 +1,7 @@
+,type,model,accuracy,precision,recall,f1,support
+11,Late_fusion_average,BERT+ViT,0.858 ± 0.013,0.847 ± 0.05,0.821 ± 0.071,0.829 ± 0.049,40.491 ± 0.22
+11,Late_fusion_average,BERT+MedImageInsight,0.858 ± 0.013,0.847 ± 0.05,0.821 ± 0.071,0.829 ± 0.049,40.491 ± 0.22
+11,Late_fusion_weighted,BERT+ViT,0.849 ± 0.009,0.844 ± 0.027,0.813 ± 0.044,0.825 ± 0.022,67.485 ± 0.227
+11,Late_fusion_weighted,BERT+MedImageInsight,0.869 ± 0.006,0.86 ± 0.031,0.836 ± 0.029,0.846 ± 0.017,67.485 ± 0.227
+11,Late_fusion_meta,BERT+ViT,0.834 ± 0.021,0.843 ± 0.054,0.798 ± 0.061,0.814 ± 0.043,40.491 ± 0.22
+11,Late_fusion_meta,BERT+MedImageInsight,0.867 ± 0.015,0.868 ± 0.053,0.836 ± 0.049,0.845 ± 0.04,40.491 ± 0.22
