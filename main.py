@@ -27,7 +27,7 @@ def main(args):
 
 
     # create dirs for output
-    rut_dir = f"out\\{text_embedder.name}_{image_embedder.name}"
+    out_dir = f"out\\{text_embedder.name}_{image_embedder.name}"
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
