@@ -5,7 +5,7 @@ The goal of the project is to train a reliable classificator without the need of
 ## Models used for embedding (WIP)
 - BERT
 - VIT
-- openClip
+- MedImageInsight
 
 
 ## RocoV2 dataset
@@ -23,10 +23,35 @@ We identified 11 CUIs for our classification:
 - C0497156: Lymphadenopathy
 - C5203670: COVID19 (disease)
 
-## Classification pipeline (WIP)
 
-### Early-fusion pipeline (WIP)
+## Setup
+1. Install the requirements.
+2. Create a new folder called `data`. Inside, put three subdirectories `raw`, `interim`,`preprocessed`.
+3. Download the [ROCOv2 dataset](https://zenodo.org/records/10821435) and put the files into the `raw` subfolder.
+4. Download the [MedImageInsight model](https://huggingface.co/lion-ai/MedImageInsights/tree/main). DO NOT FOLLOW THE INSTRUCTIONS OF THIS PAGE; instead, do the following: <br>
+    a. Clone the project
+    b. got to `medimageinsightmodel.py` and change the following lines 
+    ```python
+    from MedImageInsight.UniCLModel import build_unicl_model
+    from MedImageInsight.Utils.Arguments import load_opt_from_config_files
+    from MedImageInsight.ImageDataLoader import build_transforms
+    from MedImageInsight.LangEncoder import build_tokenizer
+    ```
+    to this:
+    ```python
+    from .MedImageInsight.UniCLModel import build_unicl_model
+    from .MedImageInsight.Utils.Arguments import load_opt_from_config_files
+    from .MedImageInsight.ImageDataLoader import build_transforms
+    from .MedImageInsight.LangEncoder import build_tokenizer
+    ```
 
-### Late-fusion pipeline (WIP)
 
-## Classifier selection (WIP)
+
+## Run
+Inside the virtual env, run the `main.py` file. You can use the following parameters:
+
+| Parameter    | Arguments                                     | Description                                                                                               |
+|--------------|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| -text_model  | bert (default)                                | Text embedding model                                                                                      |
+| -image_model | vit (default) medimageinsight                 | Image embedding model                                                                                     |
+| -fusion      | both (default) early late late_mean late_meta | Fusion types: - early fusion - late fusion with mean and weighted mean - late fusion with meta-classifier |
